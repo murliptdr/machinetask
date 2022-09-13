@@ -6,8 +6,14 @@ import ImageGallery from "react-image-gallery";
 import '../../node_modules/react-image-gallery/styles/css/image-gallery.css';
 import Rating from '@mui/material/Rating';
 import axios from 'axios';
+import { useSelector, useDispatch } from 'react-redux'
+import { productdatalist, productshow } from '../Reducers/productreducer';
 
 export default function Detail() {
+    const dispatch = useDispatch();
+    const productlist = useSelector((state) => state.detaildata.productdata)
+    const id = useSelector((state) => state.detaildata.id)
+    const [prodetail, setProdetail] = useState([])
     const [images, setImages] = useState([{
         original: 'https://picsum.photos/id/1018/1000/1000/',
         thumbnail: 'https://picsum.photos/id/1018/250/150/',
@@ -22,14 +28,42 @@ export default function Detail() {
     }
     ]);
     const [currentImageUrl, setCurrentImageUrl] = useState("https://picsum.photos/id/1018/1000/1000/");
-    const [productlist, setProductlist] = useState([]);
 
-    useEffect(()=>{
+    useEffect(() => {
         axios.get("https://dummyjson.com/products?limit=5")
-        .then(res=>{
-            console.log(res)
-        })
-    },[])
+            .then(res => {
+                dispatch(productdatalist(res.data));
+                dispatch(productshow(res.data.products[0]?.id));
+                setProdetail(res.data.products[0]);
+                var data = []
+                res.data.products[0].images.map(val => {
+                    data.push({
+                        original: val,
+                        thumbnail: val
+                    })
+                })
+                setImages(data);
+                setCurrentImageUrl(res.data.products[0].images[0]);
+            })
+            .catch(err => {
+                console.log("murli",err)
+            })
+    }, []);
+
+    // useEffect(() => {
+    //         var prodata = productlist?.filter(val => val.id == id);
+    //         setProdetail(prodata[0]);
+    //                 var data = []
+    //                 prodata[0]?.map(val => {
+    //                     data.push({
+    //                         original: val,
+    //                         thumbnail: val
+    //                     })
+    //                 })
+    //                 setImages(data)
+    //                 setCurrentImageUrl(prodata[0]?.images[0])
+    // }, [id]);
+
     const SetView = (event, index) => {
         setCurrentImageUrl(images[index].original)
     }
@@ -38,7 +72,7 @@ export default function Detail() {
             <Container fluid className='p-0'>
                 <div className='heading-detail'>
                     <FaHome />
-                    <span className='heading-text'>Comfortable Anti Pollution Multi Layers</span>
+                    <span className='heading-text'>{prodetail?.title}</span>
                 </div>
             </Container>
             <Container className='p-0'>
@@ -83,11 +117,11 @@ export default function Detail() {
                         <Col lg={6}>
                             <div>
                                 <div>
-                                    <h2>Comfortable Anti Pollution Multi Layers</h2>
+                                    <h2>{prodetail.title}</h2>
                                     <p>
                                         <Rating
                                             name="simple-controlled"
-                                            value={3}
+                                            value={Number(prodetail.rating)}
                                         // onChange={(event, newValue) => {
                                         //     setValue(newValue);
                                         // }}
@@ -113,11 +147,11 @@ export default function Detail() {
 
 
                                 <div className='bdr'>
-                                    <p className='bdr-p'> Product Available In Stock : 1000</p>
+                                    <p className='bdr-p'> Product Available In Stock : {prodetail.stock}</p>
                                     <div>
                                         <p>Qty <span>
                                             <Button className='qty-button'>+</Button>
-                                            <input className='qty-input' type="text" />
+                                            <input className='qty-input' type="text" value={0} />
                                             <Button className='qty-button'>-</Button>
                                         </span>
                                             <Button className='addtocart-button'>Add To Cart</Button>
@@ -130,9 +164,9 @@ export default function Detail() {
 
                                 </div>
                                 <div>
-                                    <p><strong>Brand :</strong><span className='p-detail'>Hewlett-Packard</span></p>
-                                    <p><strong>Product Code :</strong><span>21</span></p>
-                                    <p><strong>Reward Points :</strong><span>300</span></p>
+                                    <p><strong>Brand :</strong><span className='p-detail'>{prodetail.brand}</span></p>
+                                    <p><strong>Product Code :</strong><span>{prodetail.id}</span></p>
+                                    <p><strong>Reward Points :</strong><span>400</span></p>
                                 </div>
                             </div>
                         </Col>
@@ -141,14 +175,14 @@ export default function Detail() {
                 <div className='d-tab'>
                     <Row>
                         <Col lg={12} className="tab-col">
-                            <Button className='tab-button btn-active'>Add To Cart</Button>
-                            <Button className='tab-button'>Add To Cart</Button>
-                            <Button className='tab-button'>Add To Cart</Button>
+                            <Button className='tab-button btn-active'>Description</Button>
+                            <Button className='tab-button'>Specification</Button>
+                            <Button className='tab-button'>Reviews (1)</Button>
                         </Col>
                     </Row>
                     <hr />
                     <div className='p-5 pt-3 pb-3'>
-                        <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries.</p>
+                        <p>{prodetail.description}</p>
                         <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries.</p>
                     </div>
                     <Row className='pb-5'>
@@ -167,39 +201,15 @@ export default function Detail() {
                         </Col>
                     </Row>
                     <Row className='pb-5'>
-                        <Col className='related-list pt-5 pb-5' >
-                            <div>
-                                <Image className='pb-4' src="https://picsum.photos/id/1018/200/200"></Image>
-                                <p className='p-0 m-0'>Haier HWPM 58-020 Fully</p>
-                                <p className='p-0 m-0'>Automatic System</p>
-                                <p className='p-0 m-0'><strong>95.92$</strong></p>
-                            </div>
-                            <div>
-                                <Image className='pb-4' src="https://picsum.photos/id/1018/200/200"></Image>
-                                <p className='p-0 m-0'>Haier HWPM 58-020 Fully</p>
-                                <p className='p-0 m-0'>Automatic System</p>
-                                <p className='p-0 m-0'><strong>95.92$</strong></p>
-                            </div>
-                            <div>
-                                <Image className='pb-4' src="https://picsum.photos/id/1018/200/200"></Image>
-                                <p className='p-0 m-0'>Haier HWPM 58-020 Fully</p>
-                                <p className='p-0 m-0'>Automatic System</p>
-                                <p className='p-0 m-0'><strong>95.92$</strong></p>
-                            </div>
-                            <div>
-                                <Image className='pb-4' src="https://picsum.photos/id/1018/200/200"></Image>
-                                <p className='p-0 m-0'>Haier HWPM 58-020 Fully</p>
-                                <p className='p-0 m-0'>Automatic System</p>
-                                <p className='p-0 m-0'><strong>95.92$</strong></p>
-                            </div>
-                            <div>
-                                <Image className='pb-4' src="https://picsum.photos/id/1018/200/200"></Image>
-                                <p className='p-0 m-0'>Haier HWPM 58-020 Fully</p>
-                                <p className='p-0 m-0'>Automatic System</p>
-                                <p className='p-0 m-0'><strong>95.92$</strong></p>
-                            </div>
-
-
+                        <Col className='related-list pt-5 pb-5' >x
+                            {productlist?.products?.map(val =>
+                                <div key={val.id} onClick={dispatch(productshow(val.id))}>
+                                    <Image className='pb-4' src={val.thumbnail}></Image>
+                                    <p className='p-0 m-0'>{val.title}</p>
+                                    <p className='p-0 m-0'>{val.brand}</p>
+                                    <p className='p-0 m-0'><strong>{val.price}$</strong></p>
+                                </div>
+                            )}
                         </Col>
                     </Row>
                 </div>
