@@ -14,7 +14,7 @@ export default function Header() {
     const wishlistData = useSelector((store) => store.detaildata.wishlistdata);
     const [total, setTotal] = useState(0);
     const [cartopen, setCartopen] = useState(false);
-    const [wishopen, setWishopen] = useState(true);
+    const [wishopen, setWishopen] = useState(false);
     const dispatch = useDispatch();
 
     const updatecart = (detail, quantity) => {

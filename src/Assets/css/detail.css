@@ -37,10 +37,13 @@ svg.search-icon {
 
 input.searchboxinput.form-control {
     border-radius: 25px !important;
+    background-color: gainsboro;
 }
 
 select.menuselect.form-select {
     border-radius: 25px;
+    background-color: #b79377;
+    color: #fff;
 }
 
 .menu-right {
@@ -67,6 +70,11 @@ ul.nav-ul {
     justify-content: space-between;
     padding: 0px 315px;
     margin: 0px;
+}
+
+select.menuselect.form-select {
+    background-image: url("../Image/download-white.svg") ;
+    background-size:"11%";
 }
 
 .nav-main {
