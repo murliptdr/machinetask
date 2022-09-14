@@ -7,7 +7,7 @@ import '../../node_modules/react-image-gallery/styles/css/image-gallery.css';
 import Rating from '@mui/material/Rating';
 import axios from 'axios';
 import { useSelector, useDispatch } from 'react-redux'
-import { getcartdata, productdata, productshow } from '../Reducers/productreducer';
+import { getcartdata, productdata, productshow, wishlistdata } from '../Reducers/productreducer';
 
 const Detail = () => {
     const dispatch = useDispatch();
@@ -18,6 +18,8 @@ const Detail = () => {
     const [images, setImages] = useState([]);
     const [currentImageUrl, setCurrentImageUrl] = useState([]);
     const [quantityvalue, setQuantityvalue] = useState(1);
+    const wishlist = useSelector((store) => store.detaildata.wishlistdata);
+
     useEffect(() => {
         axios.get("https://dummyjson.com/products?limit=5")
             .then(res => {
@@ -55,26 +57,32 @@ const Detail = () => {
             setQuantityvalue(quantityvalue - 1)
         }
     }
-    const addtocart = (id) => {
+    const addtocart = (detail) => {
         var cart = [...cartdata];
         var data = {
-            product_id: id,
+            product_detail: detail,
             quantity: quantityvalue
         }
-        var isAvailable = cartdata?.filter(val => val.product_id == id);
-        console.log(isAvailable)
+        var isAvailable = cartdata?.filter(val => val.product_detail?.id == detail.id);
         if (!isAvailable?.length) {
             cart.push(data)
             dispatch(getcartdata(cart))
         } else {
-            var data2 = cartdata?.filter(val => val.product_id != id);
-            data2.push({
-                product_id: id,
-                quantity : isAvailable[0]?.quantity + quantityvalue 
-            })
+            var data2 = cartdata?.map(obj => (obj.product_detail?.id == detail.id ? Object.assign({},{...obj,quantity: isAvailable[0]?.quantity + quantityvalue }) : obj))
             dispatch(getcartdata(data2))
-        }
-        
+        }    
+    }
+    const addtowish = (detail) => {
+        var wish = [...wishlist];
+        var data = detail.id
+        var isAvailable = wishlist?.includes(detail.id);
+        if (!isAvailable){
+            wish.push(data)
+            dispatch(wishlistdata(wish))
+        } else {
+            var data2 = wishlist?.filter(val => val != detail.id);
+            dispatch(wishlistdata(data2))
+        }    
     }
     return (
         <div>
@@ -161,10 +169,10 @@ const Detail = () => {
                                             <input className='qty-input' type="text" value={quantityvalue} onChange={(e) => setQuantityvalue(e.target.value)} />
                                             <Button className='qty-button' onClick={decreaseQuantity}>-</Button>
                                         </span>
-                                            <Button className='addtocart-button' onClick={() => addtocart(prodetail?.id)}>Add To Cart</Button>
+                                            <Button className='addtocart-button' onClick={() => addtocart(prodetail)}>Add To Cart</Button>
                                         </p>
                                         <p className='pt-2 mb-2'>
-                                            <span>Add To Wishlist</span>
+                                            <span onClick={()=> addtowish(prodetail)}>Add To Wishlist</span>
                                             <span style={{ paddingLeft: '30px' }}>Add To Compare</span>
                                         </p>
                                     </div>
