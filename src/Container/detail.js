@@ -7,65 +7,74 @@ import '../../node_modules/react-image-gallery/styles/css/image-gallery.css';
 import Rating from '@mui/material/Rating';
 import axios from 'axios';
 import { useSelector, useDispatch } from 'react-redux'
-import { productdatalist, productshow } from '../Reducers/productreducer';
+import { getcartdata, productdata, productshow } from '../Reducers/productreducer';
 
-export default function Detail() {
+const Detail = () => {
     const dispatch = useDispatch();
-    const productlist = useSelector((state) => state.detaildata.productdata)
-    const id = useSelector((state) => state.detaildata.id)
+    const productlist = useSelector((state) => state.detaildata.productdata);
+    const cartdata = useSelector((store) => store.detaildata.cartdata);
+    const id = useSelector((state) => state.detaildata.id);
     const [prodetail, setProdetail] = useState([])
-    const [images, setImages] = useState([{
-        original: 'https://picsum.photos/id/1018/1000/1000/',
-        thumbnail: 'https://picsum.photos/id/1018/250/150/',
-    },
-    {
-        original: 'https://picsum.photos/id/1015/1000/1000/',
-        thumbnail: 'https://picsum.photos/id/1015/250/150/',
-    },
-    {
-        original: 'https://picsum.photos/id/1019/1000/1000/',
-        thumbnail: 'https://picsum.photos/id/1019/250/150/',
-    }
-    ]);
-    const [currentImageUrl, setCurrentImageUrl] = useState("https://picsum.photos/id/1018/1000/1000/");
-
+    const [images, setImages] = useState([]);
+    const [currentImageUrl, setCurrentImageUrl] = useState([]);
+    const [quantityvalue, setQuantityvalue] = useState(1);
     useEffect(() => {
         axios.get("https://dummyjson.com/products?limit=5")
             .then(res => {
-                dispatch(productdatalist(res.data));
-                dispatch(productshow(res.data.products[0]?.id));
-                setProdetail(res.data.products[0]);
-                var data = []
-                res.data.products[0].images.map(val => {
-                    data.push({
-                        original: val,
-                        thumbnail: val
-                    })
-                })
-                setImages(data);
-                setCurrentImageUrl(res.data.products[0].images[0]);
+                dispatch(productdata(res.data.products));
+                dispatch(productshow(Number(res.data?.products[0]?.id)));
             })
             .catch(err => {
-                console.log("murli",err)
+                console.log("err", err)
             })
     }, []);
-
-    // useEffect(() => {
-    //         var prodata = productlist?.filter(val => val.id == id);
-    //         setProdetail(prodata[0]);
-    //                 var data = []
-    //                 prodata[0]?.map(val => {
-    //                     data.push({
-    //                         original: val,
-    //                         thumbnail: val
-    //                     })
-    //                 })
-    //                 setImages(data)
-    //                 setCurrentImageUrl(prodata[0]?.images[0])
-    // }, [id]);
+    useEffect(() => {
+        var prodata = productlist?.filter(val => val.id == id);
+        setProdetail(prodata[0]);
+        setCurrentImageUrl([prodata[0]?.images[0]]);
+        var data = []
+        prodata[0]?.images?.map(val => {
+            data.push({
+                original: val,
+                thumbnail: val
+            })
+        })
+        setImages(data)
+    }, [id]);
 
     const SetView = (event, index) => {
         setCurrentImageUrl(images[index].original)
+    }
+    const increaseQuantity = () => {
+        if(prodetail?.stock > quantityvalue ){
+        setQuantityvalue(quantityvalue + 1)
+        }
+    }
+    const decreaseQuantity = () => {
+        if (quantityvalue > 1) {
+            setQuantityvalue(quantityvalue - 1)
+        }
+    }
+    const addtocart = (id) => {
+        var cart = [...cartdata];
+        var data = {
+            product_id: id,
+            quantity: quantityvalue
+        }
+        var isAvailable = cartdata?.filter(val => val.product_id == id);
+        console.log(isAvailable)
+        if (!isAvailable?.length) {
+            cart.push(data)
+            dispatch(getcartdata(cart))
+        } else {
+            var data2 = cartdata?.filter(val => val.product_id != id);
+            data2.push({
+                product_id: id,
+                quantity : isAvailable[0]?.quantity + quantityvalue 
+            })
+            dispatch(getcartdata(data2))
+        }
+        
     }
     return (
         <div>
@@ -117,14 +126,12 @@ export default function Detail() {
                         <Col lg={6}>
                             <div>
                                 <div>
-                                    <h2>{prodetail.title}</h2>
+                                    <h2>{prodetail?.title}</h2>
                                     <p>
                                         <Rating
                                             name="simple-controlled"
-                                            value={Number(prodetail.rating)}
-                                        // onChange={(event, newValue) => {
-                                        //     setValue(newValue);
-                                        // }}
+                                            value={Number(prodetail?.rating)}
+                                            readOnly
                                         />
                                         <span className="review-count"> 1 review</span>
                                         <span className="review-count1"> <FaPencilAlt /> Write A Review</span>
@@ -132,7 +139,7 @@ export default function Detail() {
                                 </div>
 
                                 <div>
-                                    <h3> 95.72$ </h3>
+                                    <h3> {prodetail?.price}$ </h3>
 
                                     <p> Ex Tax: 78.46$</p>
 
@@ -147,14 +154,14 @@ export default function Detail() {
 
 
                                 <div className='bdr'>
-                                    <p className='bdr-p'> Product Available In Stock : {prodetail.stock}</p>
+                                    <p className='bdr-p'> Product Available In Stock : {prodetail?.stock}</p>
                                     <div>
                                         <p>Qty <span>
-                                            <Button className='qty-button'>+</Button>
-                                            <input className='qty-input' type="text" value={0} />
-                                            <Button className='qty-button'>-</Button>
+                                            <Button className='qty-button' onClick={increaseQuantity}>+</Button>
+                                            <input className='qty-input' type="text" value={quantityvalue} onChange={(e) => setQuantityvalue(e.target.value)} />
+                                            <Button className='qty-button' onClick={decreaseQuantity}>-</Button>
                                         </span>
-                                            <Button className='addtocart-button'>Add To Cart</Button>
+                                            <Button className='addtocart-button' onClick={() => addtocart(prodetail?.id)}>Add To Cart</Button>
                                         </p>
                                         <p className='pt-2 mb-2'>
                                             <span>Add To Wishlist</span>
@@ -164,8 +171,8 @@ export default function Detail() {
 
                                 </div>
                                 <div>
-                                    <p><strong>Brand :</strong><span className='p-detail'>{prodetail.brand}</span></p>
-                                    <p><strong>Product Code :</strong><span>{prodetail.id}</span></p>
+                                    <p><strong>Brand :</strong><span className='p-detail'>{prodetail?.brand}</span></p>
+                                    <p><strong>Product Code :</strong><span>{prodetail?.id}</span></p>
                                     <p><strong>Reward Points :</strong><span>400</span></p>
                                 </div>
                             </div>
@@ -182,7 +189,7 @@ export default function Detail() {
                     </Row>
                     <hr />
                     <div className='p-5 pt-3 pb-3'>
-                        <p>{prodetail.description}</p>
+                        <p>{prodetail?.description}</p>
                         <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries.</p>
                     </div>
                     <Row className='pb-5'>
@@ -202,8 +209,8 @@ export default function Detail() {
                     </Row>
                     <Row className='pb-5'>
                         <Col className='related-list pt-5 pb-5' >x
-                            {productlist?.products?.map(val =>
-                                <div key={val.id} onClick={dispatch(productshow(val.id))}>
+                            {productlist?.map(val =>
+                                <div key={val.id} onClick={() => { dispatch(productshow(val.id)); setQuantityvalue(1); window.scrollTo(0, 0) }}>
                                     <Image className='pb-4' src={val.thumbnail}></Image>
                                     <p className='p-0 m-0'>{val.title}</p>
                                     <p className='p-0 m-0'>{val.brand}</p>
@@ -218,3 +225,4 @@ export default function Detail() {
         </div>
     )
 }
+export default Detail;
