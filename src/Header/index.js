@@ -38,6 +38,22 @@ export default function Header() {
         setTotal(newtotal)
     }, [cartdata])
 
+    const wishlisttoggle = () =>{
+        if(wishopen){
+            setWishopen(false)
+        }else{
+            setWishopen(true)
+            setCartopen(false)
+        }
+    }
+    const cartlisttoggle = () =>{
+        if(cartopen){
+            setCartopen(false)
+        }else{
+            setWishopen(false)
+            setCartopen(true)
+        }
+    }
     return (
         <>
             <div className='main-container'>
@@ -83,7 +99,7 @@ export default function Header() {
                                             <FaExchangeAlt />
                                         </li>
                                         <li className='menu-right-li'>
-                                            <AiOutlineHeart onClick={() => wishopen ? setWishopen(false) : setWishopen(true)}/>{wishlistData?.length ? <span className='wishlistcount'>{wishlistData?.length}</span> : ""}
+                                            <AiOutlineHeart onClick={() => wishlisttoggle()}/>{wishlistData?.length ? <span className='wishlistcount'>{wishlistData?.length}</span> : ""}
 
                                             <div className={wishopen ? 'popupcart' : "d-none"}>
 
@@ -120,7 +136,7 @@ export default function Header() {
                                             </div>
                                         </li>
                                         <li className='menu-right-li' >
-                                            <CgShoppingBag onClick={() => cartopen ? setCartopen(false) : setCartopen(true)} />{cartdata?.length ? <span className='cartcount'>{cartdata?.length}</span> : ""}
+                                            <CgShoppingBag onClick={() => cartlisttoggle()} />{cartdata?.length ? <span className='cartcount'>{cartdata?.length}</span> : ""}
 
 
                                             <div className={cartopen ? 'popupcart' : "d-none"}>
