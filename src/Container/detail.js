@@ -172,7 +172,9 @@ const Detail = () => {
                                             <Button className='addtocart-button' onClick={() => addtocart(prodetail)}>Add To Cart</Button>
                                         </p>
                                         <p className='pt-2 mb-2'>
-                                            <span onClick={()=> addtowish(prodetail)}>Add To Wishlist</span>
+                                            {wishlist?.includes(prodetail.id) ? 
+                                            <span >Already In Wishlist</span>
+                                            :<span onClick={()=> addtowish(prodetail)}>Add To Wishlist</span>}
                                             <span style={{ paddingLeft: '30px' }}>Add To Compare</span>
                                         </p>
                                     </div>
